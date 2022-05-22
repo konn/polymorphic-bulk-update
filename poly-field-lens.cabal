@@ -1,0 +1,44 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           poly-field-lens
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/poly-field-lens#readme>
+homepage:       https://github.com/githubuser/poly-field-lens#readme
+bug-reports:    https://github.com/githubuser/poly-field-lens/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2022 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/poly-field-lens
+
+library
+  exposed-modules:
+      Data.Functor.Dissectable
+      Data.Record.PartialUpdate
+      Lib
+  other-modules:
+      Paths_poly_field_lens
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , bifunctors
+    , generic-lens
+    , lens
+    , profunctors
+    , tagged
+    , total
+  default-language: Haskell2010
