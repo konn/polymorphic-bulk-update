@@ -61,13 +61,11 @@ class Dissectable (f :: Type -> Type) where
   type Derivative f :: Type -> Type -> Type
   start :: f l -> Suspended f l r
   proceed :: r -> Derivative f l r -> Suspended f l r
-  plug :: x -> Derivative f x x -> f x
 
 class GDissectable (f :: Type -> Type) where
   data GDerivative f :: Type -> Type -> Type
   gstart :: f l -> GSusp f (GDerivative f) l r
   gproceed :: r -> GDerivative f l r -> GSusp f (GDerivative f) l r
-  gplug :: x -> GDerivative f x x -> f x
 
 bihoist ::
   (forall x. f x -> g x) ->
@@ -83,8 +81,6 @@ instance GDissectable f => GDissectable (M1 i c f) where
   {-# INLINE gstart #-}
   gproceed fc = coerce . gproceed fc . getM1Deriv
   {-# INLINE gproceed #-}
-  gplug x = M1 . gplug x . getM1Deriv
-  {-# INLINE gplug #-}
 
 deriving instance
   Show (GDerivative f a b) =>
@@ -106,8 +102,6 @@ instance GDissectable U1 where
   {-# INLINE gstart #-}
   gproceed = const $ \case {}
   {-# INLINE gproceed #-}
-  gplug = const $ \case {}
-  {-# INLINE gplug #-}
 
 instance GDissectable V1 where
   newtype GDerivative V1 a b = V1GDeriv (Const Void a b)
@@ -117,8 +111,6 @@ instance GDissectable V1 where
   {-# INLINE gstart #-}
   gproceed = const $ \case {}
   {-# INLINE gproceed #-}
-  gplug = const $ \case {}
-  {-# INLINE gplug #-}
 
 instance GDissectable Par1 where
   newtype GDerivative Par1 a b = Par1GDeriv (Const () a b)
@@ -128,8 +120,6 @@ instance GDissectable Par1 where
   {-# INLINE gstart #-}
   gproceed = const . GDone . Par1
   {-# INLINE gproceed #-}
-  gplug = const . Par1
-  {-# INLINE gplug #-}
 
 instance GDissectable (K1 i c) where
   newtype GDerivative (K1 i c) a b = K1GDeriv (Const Void a b)
@@ -139,8 +129,6 @@ instance GDissectable (K1 i c) where
   {-# INLINE gstart #-}
   gproceed = const $ \case {}
   {-# INLINE gproceed #-}
-  gplug = const $ \case {}
-  {-# INLINE gplug #-}
 
 instance (GDissectable f, GDissectable g) => GDissectable (f :+: g) where
   newtype GDerivative (f :+: g) a b = SumGDeriv ((GDerivative f |+| GDerivative g) a b)
@@ -150,9 +138,6 @@ instance (GDissectable f, GDissectable g) => GDissectable (f :+: g) where
   gproceed c (SumGDeriv (L2 cl)) = bihoist L1 (SumGDeriv . L2) $ gproceed c cl
   gproceed c (SumGDeriv (R2 cl)) = bihoist R1 (SumGDeriv . R2) $ gproceed c cl
   {-# INLINE gproceed #-}
-  gplug x (SumGDeriv (L2 l)) = L1 (gplug x l)
-  gplug x (SumGDeriv (R2 r)) = R1 (gplug x r)
-  {-# INLINE gplug #-}
 
 deriving instance
   ( Show (GDerivative f a b)
@@ -188,9 +173,6 @@ instance (GDissectable f, GDissectable g) => GDissectable (f :*: g) where
   gproceed c (ProdDeriv (L2 (Pair pd (Clown qj)))) = mindp (gproceed c pd) qj
   gproceed c (ProdDeriv (R2 (Pair (Joker pc) qd))) = mindq pc (gproceed c qd)
   {-# INLINE gproceed #-}
-  gplug c (ProdDeriv (L2 (Pair f (Clown g)))) = gplug c f :*: g
-  gplug c (ProdDeriv (R2 (Pair (Joker f) g))) = f :*: gplug c g
-  {-# INLINE gplug #-}
 
 deriving instance
   ( Show (f b)
@@ -215,9 +197,6 @@ instance (Dissectable f, GDissectable g) => GDissectable (f :.: g) where
             More gj gd -> continue gj gd
             Done fg -> GDone $ Comp1 fg
   {-# INLINE gstart #-}
-  gplug x (CompGDeriv (Pair (Biff de) gd)) =
-    Comp1 $ plug (gplug x gd) de
-  {-# INLINE gplug #-}
   gproceed c (CompGDeriv (Pair cfg@(Biff fg) gd0)) =
     case gproceed c gd0 of
       GMore j gd -> GMore j $ CompGDeriv $ Pair cfg gd
@@ -256,10 +235,6 @@ instance Dissectable f => GDissectable (Rec1 f) where
   {-# INLINE gstart #-}
   gproceed = coerce $ proceed @f
   {-# INLINE gproceed #-}
-  gplug =
-    coerce $ plug @f @x ::
-      forall x. x -> GDerivative (Rec1 f) x x -> Rec1 f x
-  {-# INLINE gplug #-}
 
 deriving instance
   Show (Derivative f a b) => Show (GDerivative (Rec1 f) a b)
@@ -272,8 +247,6 @@ instance (Generic1 f, GDissectable (Rep1 f)) => Dissectable (Generically1 f) whe
   {-# INLINE start #-}
   proceed x = Suspended . bihoist (Generically1 . to1) id . gproceed x
   {-# INLINE proceed #-}
-  plug x = Generically1 . to1 . gplug x
-  {-# INLINE plug #-}
 
 deriving via Generically1 [] instance Dissectable []
 
