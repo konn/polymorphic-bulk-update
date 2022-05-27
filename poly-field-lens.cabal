@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Data.Functor.Dissectable
+      Data.HVec
       Data.Record.PartialUpdate
   other-modules:
       Paths_poly_field_lens
@@ -38,6 +39,7 @@ library
     , generic-lens
     , generic-lens-core
     , lens
+    , primitive
     , profunctors
     , tagged
     , total

@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
@@ -27,7 +28,8 @@ We have flipped the role of left and right parameters to make 'Suspended' profun
 module Data.Functor.Dissectable
   ( Dissectable (..),
     GDissectable (..),
-    Suspended (Done, More),
+    Suspended (..),
+    GSusp (..),
     Generically1 (..),
     update,
   )
@@ -250,13 +252,8 @@ instance (Generic1 f, GDissectable (Rep1 f)) => Dissectable (Generically1 f) whe
 
 deriving via Generically1 [] instance Dissectable []
 
-data Foo a = Foo {a1 :: a, str :: String, a2 :: a}
-  deriving (Show, Eq, Ord, Generic, Generic1)
-  deriving (Dissectable) via Generically1 Foo
-
 update :: Dissectable f => (a -> b) -> Suspended f a b -> Suspended f a b
 update _ (Done r) = Done r
 update f (More x rest) = proceed (f x) rest
 
--- >>> update show $ update show $ start $ Foo (42 :: Int) "hehe" 5
--- GDone (Foo {a1 = "42", str = "hehe", a2 = "5"})
+deriving via Generically1 Maybe instance Dissectable Maybe
